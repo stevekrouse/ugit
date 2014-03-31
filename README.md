@@ -31,11 +31,11 @@ Assuming you've aliased `git` to `ugit`, you can type Git commands as usual
     84f66c2cdffeee1aebb2a3244cc1e726615b777d RESTORED BEFORE pull --rebase (Thu Mar 6 12:47:31 2014 -0800)
     95a21b1959c7a03f84de4c2cbb8b77c947998f65 BEFORE undo (Thu Mar 6 11:35:20 2014 -0800)
     
-#### command-log
+#### commands
 
-`git command-log` lists  your git command history
+`git commands` lists your git command history
 
-    $ git command-log
+    $ git commands
     84f66c2cdffeee1aebb2a3244cc1e726615b777d BEFORE pull --rebase (Thu Mar 6 12:47:31 2014 -0800)
     95a21b1959c7a03f84de4c2cbb8b77c947998f65 BEFORE add file1 file2 (Thu Mar 6 11:35:20 2014 -0800)
         
