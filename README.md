@@ -6,44 +6,81 @@ uGit saves incrimental versions of your entire repo (including your `.git` direc
 
 ## Installation
 
-todo
+Add this line to your application's Gemfile:
+
+    gem 'ugit'
+
+And then execute:
+
+    $ bundle
+
+Or install it yourself as:
+
+    $ gem install ugit
 
 ## Aliasing
 
-todo
+TODO
 
-### Shell tab-completion
+## Shell tab-completion
 
-todo
+TODO
 
-## Commands
+## Usage
 
 Assuming you've aliased `git` to `ugit`, you can type Git commands as usual
 
     $ git add file1 file2
     $ git pull --rebase
-    
-#### undo
 
-`git undo` restores your repo to the state it was in immediately prior to your most recent Git command. Before restoring the previous state, uGit saves the state before the `undo` (so you can `git undo` a `git undo`, and on and on).
-
-    $ git undo
-    84f66c2cdffeee1aebb2a3244cc1e726615b777d RESTORED BEFORE pull --rebase (Thu Mar 6 12:47:31 2014 -0800)
-    95a21b1959c7a03f84de4c2cbb8b77c947998f65 BEFORE undo (Thu Mar 6 11:35:20 2014 -0800)
-    
 #### commands
 
-`git commands` lists your git command history
+`git commands` lists your each git command you typed and the state immediately before you typed it below
 
-    $ git commands
-    84f66c2cdffeee1aebb2a3244cc1e726615b777d BEFORE pull --rebase (Thu Mar 6 12:47:31 2014 -0800)
-    95a21b1959c7a03f84de4c2cbb8b77c947998f65 BEFORE add file1 file2 (Thu Mar 6 11:35:20 2014 -0800)
-        
+    $ git history
+            pull --rebase (Thu Mar 6 12:47:31 2014 -0800)
+    84f66c2
+            add file1 file2 (Thu Mar 6 11:35:20 2014 -0800)
+    95a21b1
+
 #### restore
 
-`git restore <shaw>` restores your repo to the state it was in before you typed the command at `<shaw>`
+`git restore <shaw>` restores your repo to the state it was in before you typed the command above `<shaw>`
 
-    $ git restore 84f66c2cdffeee1aebb2a3244cc1e726615b777d
-    Froze current state as "BEFORE restore 84f66c2cdffeee1aebb2a3244cc1e726615b777d"
-    State restored to "BEFORE pull --rebase" on Thu Mar 6 12:47:31 2014 -0800 (84f66c2cdffeee1aebb2a3244cc1e726615b777d)
-    
+    $ git restore 84f66c2
+    $ git commands
+    Thu 3/6 12:48 restore 84f66c2
+    84f66c2
+    Thu 3/6 12:47 pull --rebase
+    95a21b1
+    Thu 3/6 11:35 add file1 file2
+    234lkds
+
+    $ git commands
+    Thu 3/6 12:48 restore 84f66c2
+    84f66c2
+    Thu 3/6 12:47 pull --rebase
+    95a21b1
+
+     [v0] Initial State
+     [v1] - add file1 file2 - Thu 3/6 11:35
+     [..]
+     v21 | before | add file1 file2 | Thu 3/6 11:35
+     v22 | after  | add file1 file2 | Thu 3/6 11:35
+     ----------------------------------------------
+     v23 | before | pull            | Thu 3/6 10:35
+     v24 | after  | pull            | Thu 3/6 10:35
+     ----------------------------------------------
+     v25 | before | add file1 file2 | Thu 3/6 11:35
+    *v26 | after  | add file1 file2 | Thu 3/6 11:35
+
+    git undo
+
+
+## Contributing
+
+1. Fork it ( http://github.com/stevekrouse/ugit/fork )
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request

@@ -1,58 +1,84 @@
 require 'test/unit'
-require "#{File.dirname(__FILE__)}/../lib/freezer"
+require 'ugit/git'
+require 'ugit/freezer'
 require 'pry'
+require 'pry-nav'
+require 'pry-stack_explorer'
 
 class TestFreezer < Test::Unit::TestCase
 
   def setup
-    `mkdir test-working-dir`
-    @freezer = Freezer.new("#{`pwd`.chomp}/test-working-dir", ".freezer")
+    @work_tree = "test/test-working-dir"
+    @freezer_dirname = ".freezer"
+
+    `mkdir #{@work_tree}`
+
+    @freezer = Ugit::Freezer.new(@work_tree, @freezer_dirname)
   end
 
   def teardown
-    `rm -rf test-working-dir`
+    `rm -rf #{@work_tree}`
   end
 
-  def test_git_dir_in_correct_location
-    assert File.exist?('test-working-dir/.freezer')
+  def test_freezer_dir_in_correct_location
+    assert File.exist?("#{@work_tree}/#{@freezer_dirname}")
+  end
+
+  def test_try_freeze_empty
+    # try_freeze("INITIALIZED", allow_empty=true)  # called in initialized -> init
+    assert_equal "INITIALIZED", @freezer.git.msg_by_sha(@freezer.git.head_sha)
+  end
+
+  def test_try_freeze
+    `mkdir #{@work_tree}/a`
+    `touch #{@work_tree}/a/b #{@work_tree}/c`
+    @freezer.try_freeze("TEST")
+
+    assert_equal "TEST", @freezer.git.msg_by_sha(@freezer.git.head_sha)
+  end
+
+  def test_freeze_amend
+    @freezer.freeze("status")
+
+    assert_equal "status\nINITIALIZED", @freezer.git.msg_by_sha(@freezer.git.head_sha)
   end
 
   def test_files_restore
-    `touch test-working-dir/a test-working-dir/b test-working-dir/c`
+    `touch #{@work_tree}/a #{@work_tree}/b #{@work_tree}/c`
     @freezer.freeze("froze a b c")
     old_sha = @freezer.git.head_sha
 
-    `rm test-working-dir/a test-working-dir/b test-working-dir/c`
+    `rm #{@work_tree}/a #{@work_tree}/b`
+    `touch #{@work_tree}/d`
 
-    @freezer.restore(old_sha, "removed a b c", "restored a b c")
-    assert_equal ["a", "b", "c"], `ls test-working-dir`.split("\n")
+    @freezer.restore(old_sha, "removed a b; add d", "restored a b c")
+    assert_equal ["a", "b", "c"], `ls #{@work_tree}`.split("\n")
   end
 
   def test_directory_restore
-    `mkdir test-working-dir/a test-working-dir/b`
-    `touch test-working-dir/a/a test-working-dir/a/b test-working-dir/b/a test-working-dir/b/b`
+    `mkdir #{@work_tree}/a #{@work_tree}/b`
+    `touch #{@work_tree}/a/a #{@work_tree}/a/b #{@work_tree}/b/a #{@work_tree}/b/b`
     @freezer.freeze("froze a/a a/b b/a b/b")
     old_sha = @freezer.git.head_sha
 
-    `rm -rf test-working-dir/a`
+    `rm -rf #{@work_tree}/a`
+    `touch #{@work_tree}/b/c`
 
-     @freezer.restore(old_sha, "removed dir a", "restored dir a b")
-     files = `find test-working-dir -type f`.split("\n").select {|fn| fn !~ /.freezer/}
-     assert_equal ["test-working-dir/a/a", "test-working-dir/a/b", "test-working-dir/b/a", "test-working-dir/b/b"], files
+     @freezer.restore(old_sha, "removed a/*; added b/c", "restored dir a/* b/a b/c")
+     files = `find #{@work_tree} -type f`.split("\n").select{|fn| fn !~ /.freezer/}
+     assert_equal ["#{@work_tree}/a/a", "#{@work_tree}/a/b", "#{@work_tree}/b/a", "#{@work_tree}/b/b"], files
   end
 
-
-
   # def test_empty_directory_restore
-  #   `mkdir test-working-dir/a test-working-dir/b test-working-dir/c`
+  #   `mkdir #{@work_tree}/a #{@work_tree}/b #{@work_tree}/c`
   #   @freezer.freeze("froze a b c")
   #   old_sha = @freezer.git.head_sha
 
-  #   `rm -rf test-working-dir/a test-working-dir/b test-working-dir/c`
+  #   `rm -rf #{@work_tree}/a #{@work_tree}/b #{@work_tree}/c`
 
-  #   assert_equal `ls test-working-dir`.split("\n"), []
+  #   assert_equal `ls #{@work_tree}`.split("\n"), []
   #   @freezer.restore(old_sha, "removed a b c", "restored a b c")
-  #   assert_equal `ls test-working-dir`.split("\n"), ["a", "b", "c"]
+  #   assert_equal `ls #{@work_tree}`.split("\n"), ["a", "b", "c"]
   # end
 
 end

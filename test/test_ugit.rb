@@ -1,45 +1,65 @@
 require 'test/unit'
-require_relative '../lib/ugit'
-require 'pry'
+require 'ugit'
 
 class TestUgit < Test::Unit::TestCase
 
   def setup
-    `mkdir test-working-dir`
-    `git --work-tree="#{`pwd`.chomp}/test-working-dir" --git-dir="#{`pwd`.chomp}/test-working-dir/.git" init`
-    @ugit = Ugit.new("#{`pwd`.chomp}/test-working-dir")
+    @work_tree = "test/test-working-dir"
+
+    `mkdir #{@work_tree}`
+
+    @git = Ugit::Git.new(@work_tree, ".git")
+    @git.execute("init")
+
+    @ugit = Ugit::Ugit.new(@work_tree)
   end
 
   def teardown
-    `rm -rf test-working-dir`
+    `rm -rf #{@work_tree}`
   end
 
-  # def test_git_dir_in_correct_location
-  #   assert File.exist?('test-working-dir/.ugit')
-  # end
+  def added_files
+    @git.execute("diff --name-only --cached").split("\n")
+  end
 
-  def test_files_add
-    `touch test-working-dir/a test-working-dir/b test-working-dir/c`
-    @ugit.execute('add a b c')
+  def test_git_dir_in_correct_location
+    assert File.exist?("#{@work_tree}/.ugit")
+  end
+
+  def test_files_add_restore
+    `touch #{@work_tree}/a #{@work_tree}/b #{@work_tree}/c`
+    @ugit.execute('add a b')
     old_sha = @ugit.freezer.git.head_sha
 
     @ugit.restore(old_sha)
 
-    pry  # works, but too lazy to finish this test so you can see with pry
+    # test restore
+    assert_equal [], added_files()
+
+    # test freeze before restore
+    old_old_sha = @ugit.freezer.git.execute("rev-parse HEAD~1").chomp
+    @ugit.restore(old_old_sha)
+    assert_equal ["a", "b"], added_files()
   end
 
-  # def test_directory_restore
-  #   `mkdir test-working-dir/a test-working-dir/b`
-  #   `touch test-working-dir/a/a test-working-dir/a/b test-working-dir/b/a test-working-dir/b/b`
-  #   @ffreeze.ffreeze("froze a/a a/b b/a b/b")
-  #   old_sha = @ugit.freezer.git.head_sha
+  def test_directory_add_restore
+    `mkdir #{@work_tree}/a #{@work_tree}/b`
+    `touch #{@work_tree}/a/a #{@work_tree}/a/b #{@work_tree}/b/a #{@work_tree}/b/b`
+    @ugit.execute('add a/a a/b b/a')
+    old_sha = @ugit.freezer.git.head_sha
 
+    @ugit.restore(old_sha)
 
-  #   `rm -rf test-working-dir/a`
+    # test restore
+    assert_equal [], added_files()
 
-  #    @ffreeze.restore(old_sha, "removed dir a", "restored dir a b")
-  #    files = `find test-working-dir -type f`.split("\n").select {|fn| fn !~ /.ffreeze/}
-  #    assert_equal files, ["test-working-dir/a/a", "test-working-dir/a/b", "test-working-dir/b/a", "test-working-dir/b/b"]
-  # end
+    # test freeze before restore
+    old_old_sha = @ugit.freezer.git.execute("rev-parse HEAD~1").chomp
+    @ugit.restore(old_old_sha)
+    assert_equal ["a/a", "a/b", "b/a"], added_files()
+  end
 
+  def test_restore_of_restore
+
+  end
 end
