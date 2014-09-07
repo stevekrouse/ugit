@@ -16,9 +16,10 @@ module Ugit
     end
 
     def execute(git_command)
-      freeze(git_command)
+      freeze("BEFORE #{git_command}")
       output = @git.execute(git_command)
       puts output unless output == "\n" || output.empty?
+      freeze("AFTER #{git_command}")
     end
 
     def freeze(git_command)
@@ -27,12 +28,20 @@ module Ugit
       end
     end
 
+    def undo
+      restore(self.freezer.git.last_commit_sha)
+    end
+
      def restore(sha)
       with_moved_git_dir do
         @freezer.restore(sha,
           "BEFORE restore #{sha}",
           "RESTORED #{@freezer.git.msg_by_sha(sha)} (#{sha})")
       end
+    end
+
+    def history
+      History.new(@freezer.git)
     end
 
     def log

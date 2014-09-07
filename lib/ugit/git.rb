@@ -12,7 +12,9 @@ module Ugit
     end
 
     def execute(command)
-      `#{git} #{command}`
+      # TODO color http://ruby-doc.org/stdlib-1.9.3/libdoc/pty/rdoc/PTY.html#method-c-spawn
+      # http://devver.wordpress.com/2009/10/12/ruby-subprocesses-part_3/
+      `#{git} #{command} 2>&1`
     end
 
     def git

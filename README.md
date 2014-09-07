@@ -28,43 +28,19 @@ TODO
 
 ## Usage
 
+TODO use http://www.awesomecommandlineapps.com/gems.html
+
 Assuming you've aliased `git` to `ugit`, you can type Git commands as usual
 
     $ git add file1 file2
     $ git pull --rebase
 
-#### commands
+#### history
 
-`git commands` lists your each git command you typed and the state immediately before you typed it below
+`git history` lists your each git command you typed
 
     $ git history
-            pull --rebase (Thu Mar 6 12:47:31 2014 -0800)
-    84f66c2
-            add file1 file2 (Thu Mar 6 11:35:20 2014 -0800)
-    95a21b1
 
-#### restore
-
-`git restore <shaw>` restores your repo to the state it was in before you typed the command above `<shaw>`
-
-    $ git restore 84f66c2
-    $ git commands
-    Thu 3/6 12:48 restore 84f66c2
-    84f66c2
-    Thu 3/6 12:47 pull --rebase
-    95a21b1
-    Thu 3/6 11:35 add file1 file2
-    234lkds
-
-    $ git commands
-    Thu 3/6 12:48 restore 84f66c2
-    84f66c2
-    Thu 3/6 12:47 pull --rebase
-    95a21b1
-
-     [v0] Initial State
-     [v1] - add file1 file2 - Thu 3/6 11:35
-     [..]
      v21 | before | add file1 file2 | Thu 3/6 11:35
      v22 | after  | add file1 file2 | Thu 3/6 11:35
      ----------------------------------------------
@@ -74,8 +50,40 @@ Assuming you've aliased `git` to `ugit`, you can type Git commands as usual
      v25 | before | add file1 file2 | Thu 3/6 11:35
     *v26 | after  | add file1 file2 | Thu 3/6 11:35
 
-    git undo
+#### restore
 
+`git restore v24` restores your repo to the 24th version that uGit saved. In the above case, right after you `pull`ed.
+
+    $ git restore v24
+    $ git history
+
+     v21 | before | add file1 file2 | Thu 3/6 11:35
+     v22 | after  | add file1 file2 | Thu 3/6 11:35
+     ----------------------------------------------
+     v23 | before | pull            | Thu 3/6 10:35
+     v24 | after  | pull            | Thu 3/6 10:35
+     ----------------------------------------------
+     v25 | before | add file1 file2 | Thu 3/6 11:35
+     v26 | after  | add file1 file2 | Thu 3/6 11:35
+     ----------------------------------------------
+     v27 | before | restore v24     | Thu 3/6 11:37
+     v28 | before | restore v24     | Thu 3/6 11:37
+
+As you'll notice, you don't actually go backwards in time to the 24th version. You merely slap the 24th version onto the top of your history. This allows you do `restore` fearlessly, because you can always undo your undo (and on and on).
+
+#### undo
+
+`git undo` restores your project to the state immediately before your last git command
+
+    $ git undo
+    Restored to immediately before your command "add file1 file2" (v25)
+    $ git undo
+    Restored to immediately before your command "add file1 file2" (v23)
+
+
+#### redo
+
+TODO
 
 ## Contributing
 
